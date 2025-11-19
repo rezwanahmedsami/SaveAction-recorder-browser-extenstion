@@ -258,7 +258,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 🐛 [Report a bug](https://github.com/rezwanahmedsami/SaveAction-recorder-browser-extenstion/issues/new?template=bug_report.md)
 - 💡 [Request a feature](https://github.com/rezwanahmedsami/SaveAction-recorder-browser-extenstion/issues/new?template=feature_request.md)
 - 💬 [Discussions](https://github.com/rezwanahmedsami/SaveAction-recorder-browser-extenstion/discussions)
-
----
-
-**Made with 🚀 by Rezwan Ahmed Sami**
