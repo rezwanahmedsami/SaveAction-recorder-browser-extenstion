@@ -227,6 +227,17 @@ See [JSON_SCHEMA.md](./docs/JSON_SCHEMA.md) for complete documentation.
 
 We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
 
+### Working with AI Agents
+
+This project includes comprehensive instructions for GitHub Copilot and other AI agents:
+
+- **[Custom Instructions](.github/copilot-instructions.md)** - Repository-wide guidance
+- **[Path-specific Instructions](.github/instructions/)** - Module-specific guidelines
+
+These instructions help AI agents understand the project architecture, coding standards, and best practices. Simply work in the repository and Copilot will automatically use them!
+
+### Development Workflow
+
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
