@@ -1,0 +1,2 @@
+# Test file for husky
+This is a test file to verify husky hooks work correctly.
