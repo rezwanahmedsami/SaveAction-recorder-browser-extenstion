@@ -1,9 +1,13 @@
-# SaveAction Recorder
-
-> A cross-browser extension to record user interactions on web pages and export them as JSON files for automated testing.
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+<div align="center">
+  <img src="https://raw.githubusercontent.com/rezwanahmedsami/SaveAction-recorder-browser-extenstion/5a7b19469e082ae6f18a7917c2232bfa09f5898c/src/icons/icon.svg" alt="SaveAction Recorder Logo" width="128" height="128">
+  
+  # SaveAction Recorder
+  
+  > A cross-browser extension to record user interactions on web pages and export them as JSON files for automated testing.
+  
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+</div>
 
 ## 🎯 Overview
 
