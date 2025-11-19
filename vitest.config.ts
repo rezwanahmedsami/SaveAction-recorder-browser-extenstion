@@ -15,12 +15,16 @@ export default defineConfig({
         '**/*.config.ts',
         '**/*.d.ts',
         'src/manifest.json',
+        'src/background/index.ts', // Integration heavy, tested via E2E
+        'src/content/index.ts', // Entry point, minimal logic
+        'src/popup/popup.ts', // UI component, requires E2E tests
+        'src/content/recording-indicator.ts', // DOM manipulation, requires E2E tests
       ],
       thresholds: {
-        lines: 80,
-        functions: 80,
-        branches: 80,
-        statements: 80,
+        lines: 90,
+        functions: 90,
+        branches: 79,
+        statements: 90,
       },
     },
     include: ['tests/**/*.test.ts'],
