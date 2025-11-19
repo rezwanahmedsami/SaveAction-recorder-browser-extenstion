@@ -35,15 +35,15 @@ let pollInterval: number | null = null;
  */
 async function init(): Promise<void> {
   console.log('[Popup] Initializing...');
-  
+
   // Get current status from background
   await updateStatus();
-  
+
   // Set up event listeners
   startBtn.addEventListener('click', handleStart);
   pauseBtn.addEventListener('click', handlePauseResume);
   stopBtn.addEventListener('click', handleStop);
-  
+
   // Listen for status updates from background
   chrome.runtime.onMessage.addListener((message: Message) => {
     if (message.type === 'STATUS_UPDATE') {
@@ -51,7 +51,7 @@ async function init(): Promise<void> {
       updateUI();
     }
   });
-  
+
   console.log('[Popup] Initialized');
 }
 
@@ -61,18 +61,18 @@ async function init(): Promise<void> {
 async function updateStatus(): Promise<void> {
   try {
     const response = await sendMessage<StatusResponse>({ type: 'GET_STATUS' });
-    
+
     if (response.success && response.data) {
       currentState = response.data.state;
-      
+
       if (response.data.metadata) {
         const metadata = response.data.metadata as any;
-        
+
         if (metadata.testName) {
           currentTestName.textContent = metadata.testName;
           testNameInput.value = metadata.testName;
         }
-        
+
         // Calculate duration from start time
         if (metadata.startTime) {
           startTime = new Date(metadata.startTime).getTime();
@@ -81,7 +81,7 @@ async function updateStatus(): Promise<void> {
           }
         }
       }
-      
+
       updateUI();
     }
   } catch (error) {
@@ -94,25 +94,25 @@ async function updateStatus(): Promise<void> {
  */
 async function handleStart(): Promise<void> {
   const testName = testNameInput.value.trim();
-  
+
   if (!testName) {
     showError('Please enter a test name');
     testNameInput.focus();
     return;
   }
-  
+
   hideMessages();
   setLoading(startBtn, true);
-  
+
   try {
     console.log('[Popup] Sending START_RECORDING message');
-    const response = await sendMessage({ 
+    const response = await sendMessage({
       type: 'START_RECORDING',
-      payload: { testName }
+      payload: { testName },
     });
-    
+
     console.log('[Popup] START_RECORDING response:', response);
-    
+
     if (response.success) {
       currentState = 'recording';
       startTime = Date.now();
@@ -137,14 +137,14 @@ async function handleStart(): Promise<void> {
 async function handlePauseResume(): Promise<void> {
   hideMessages();
   setLoading(pauseBtn, true);
-  
+
   try {
     const messageType = currentState === 'recording' ? 'PAUSE_RECORDING' : 'RESUME_RECORDING';
     const response = await sendMessage({ type: messageType });
-    
+
     if (response.success) {
       currentState = currentState === 'recording' ? 'paused' : 'recording';
-      
+
       if (currentState === 'paused') {
         stopDurationTimer();
         showSuccess('Recording paused');
@@ -152,7 +152,7 @@ async function handlePauseResume(): Promise<void> {
         startDurationTimer();
         showSuccess('Recording resumed');
       }
-      
+
       updateUI();
     } else {
       showError(response.error || `Failed to ${currentState === 'recording' ? 'pause' : 'resume'}`);
@@ -170,19 +170,19 @@ async function handlePauseResume(): Promise<void> {
 async function handleStop(): Promise<void> {
   hideMessages();
   setLoading(stopBtn, true);
-  
+
   try {
     console.log('[Popup] Sending STOP_RECORDING message');
     const response = await sendMessage<RecordingResponse>({ type: 'STOP_RECORDING' });
-    
+
     console.log('[Popup] STOP_RECORDING response:', response);
-    
+
     if (response.success && response.data) {
       stopDurationTimer();
-      
+
       // Download the recording
       await downloadRecording(response.data);
-      
+
       currentState = 'idle';
       startTime = null;
       testNameInput.value = '';
@@ -215,9 +215,9 @@ function updateUI(): void {
   // Update status badge
   statusBadge.className = `status-badge ${currentState}`;
   const statusText = statusBadge.querySelector('.status-text') as HTMLElement;
-  statusText.textContent = currentState === 'idle' ? 'Idle' : 
-                           currentState === 'recording' ? 'Recording' : 'Paused';
-  
+  statusText.textContent =
+    currentState === 'idle' ? 'Idle' : currentState === 'recording' ? 'Recording' : 'Paused';
+
   // Update sections visibility
   if (currentState === 'idle') {
     testNameSection.style.display = 'block';
@@ -233,11 +233,11 @@ function updateUI(): void {
     pauseBtn.style.display = 'flex';
     stopBtn.style.display = 'flex';
     testNameInput.disabled = true;
-    
+
     // Update pause/resume button
     const pauseIcon = pauseBtn.querySelector('.pause-icon') as HTMLElement;
     const resumeIcon = pauseBtn.querySelector('.resume-icon') as HTMLElement;
-    
+
     if (currentState === 'recording') {
       pauseIcon.style.display = 'block';
       resumeIcon.style.display = 'none';
@@ -255,7 +255,7 @@ function updateUI(): void {
  */
 function startDurationTimer(): void {
   stopDurationTimer();
-  
+
   const updateDuration = () => {
     if (startTime) {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -264,10 +264,10 @@ function startDurationTimer(): void {
       duration.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
   };
-  
+
   updateDuration();
   durationInterval = window.setInterval(updateDuration, 1000);
-  
+
   // Also start polling for action count
   startActionCountPolling();
 }
@@ -280,7 +280,7 @@ function stopDurationTimer(): void {
     clearInterval(durationInterval);
     durationInterval = null;
   }
-  
+
   stopActionCountPolling();
 }
 
@@ -289,18 +289,18 @@ function stopDurationTimer(): void {
  */
 function startActionCountPolling(): void {
   stopActionCountPolling();
-  
+
   const updateActionCount = async () => {
     try {
       const response = await sendMessage({ type: 'GET_STATUS' });
-      
+
       if (response.success && response.data) {
         // Stop polling if recording is idle
         if (response.data.state === 'idle') {
           stopActionCountPolling();
           return;
         }
-        
+
         if (response.data.metadata) {
           const count = response.data.metadata.actionCount || 0;
           actionCount.textContent = String(count);
@@ -311,7 +311,7 @@ function startActionCountPolling(): void {
       console.error('[Popup] Failed to get action count:', error);
     }
   };
-  
+
   updateActionCount();
   pollInterval = window.setInterval(updateActionCount, 1000);
 }
@@ -348,7 +348,7 @@ function showError(message: string): void {
   errorText.textContent = message;
   errorMessage.style.display = 'flex';
   successMessage.style.display = 'none';
-  
+
   setTimeout(() => {
     errorMessage.style.display = 'none';
   }, 5000);
@@ -361,7 +361,7 @@ function showSuccess(message: string): void {
   successText.textContent = message;
   successMessage.style.display = 'flex';
   errorMessage.style.display = 'none';
-  
+
   setTimeout(() => {
     successMessage.style.display = 'none';
   }, 3000);

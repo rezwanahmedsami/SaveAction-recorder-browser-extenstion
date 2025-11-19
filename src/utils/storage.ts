@@ -21,7 +21,7 @@ export async function saveRecording(recording: Recording): Promise<void> {
       // Get existing recording IDs
       chrome.storage.local.get(['recording_ids'], (result) => {
         const recordingIds: string[] = result.recording_ids || [];
-        
+
         // Add new ID if not already present
         if (!recordingIds.includes(recording.id)) {
           recordingIds.push(recording.id);
@@ -31,7 +31,7 @@ export async function saveRecording(recording: Recording): Promise<void> {
         chrome.storage.local.set(
           {
             [`recording_${recording.id}`]: recording,
-            'recording_ids': recordingIds,
+            recording_ids: recordingIds,
           },
           () => {
             if (chrome.runtime.lastError) {
@@ -77,7 +77,7 @@ export async function deleteRecording(id: string): Promise<void> {
       // Get existing recording IDs
       chrome.storage.local.get(['recording_ids'], (result) => {
         const recordingIds: string[] = result.recording_ids || [];
-        
+
         // Remove the ID from the list
         const updatedIds = recordingIds.filter((recordingId) => recordingId !== id);
 
@@ -88,7 +88,7 @@ export async function deleteRecording(id: string): Promise<void> {
             return;
           }
 
-          chrome.storage.local.set({ 'recording_ids': updatedIds }, () => {
+          chrome.storage.local.set({ recording_ids: updatedIds }, () => {
             if (chrome.runtime.lastError) {
               reject(new Error(chrome.runtime.lastError.message));
             } else {

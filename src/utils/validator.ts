@@ -26,9 +26,7 @@ export interface ValidationResult {
 /**
  * Validate a selector strategy
  */
-export function validateSelector(
-  selector: SelectorStrategy
-): ValidationResult {
+export function validateSelector(selector: SelectorStrategy): ValidationResult {
   const errors: ValidationError[] = [];
 
   // Check priority array
@@ -43,11 +41,7 @@ export function validateSelector(
   if (selector.priority) {
     for (const key of selector.priority) {
       const selectorValue = selector[key as keyof SelectorStrategy];
-      if (
-        !selectorValue ||
-        (typeof selectorValue === 'object' &&
-          !Array.isArray(selectorValue))
-      ) {
+      if (!selectorValue || (typeof selectorValue === 'object' && !Array.isArray(selectorValue))) {
         errors.push({
           field: `selector.${key}`,
           message: `Priority references "${key}" but selector is not defined`,
@@ -95,10 +89,7 @@ export function validateAction(action: Action): ValidationResult {
     });
   }
 
-  if (
-    typeof action.timestamp !== 'number' ||
-    action.timestamp < 0
-  ) {
+  if (typeof action.timestamp !== 'number' || action.timestamp < 0) {
     errors.push({
       field: 'action.timestamp',
       message: 'Timestamp must be a positive number',

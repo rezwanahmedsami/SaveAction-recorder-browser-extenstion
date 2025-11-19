@@ -32,11 +32,11 @@ export class RecordingIndicator {
   public hide(): void {
     this.stopTimer();
     this.stopPolling();
-    
+
     if (this.container && this.container.parentNode) {
       this.container.parentNode.removeChild(this.container);
     }
-    
+
     this.container = null;
     this.statusDot = null;
     this.timerText = null;
@@ -44,7 +44,7 @@ export class RecordingIndicator {
     this.startTime = null;
     this.pauseButton = null;
     this.stopButton = null;
-    
+
     console.log('[RecordingIndicator] Indicator hidden and cleaned up');
   }
 
@@ -70,7 +70,7 @@ export class RecordingIndicator {
     if (paused) {
       this.statusDot.style.backgroundColor = '#f59e0b';
       this.stopTimer();
-      
+
       // Update pause button icon
       if (this.pauseButton) {
         this.pauseButton.innerHTML = '▶️';
@@ -79,7 +79,7 @@ export class RecordingIndicator {
     } else {
       this.statusDot.style.backgroundColor = '#ef4444';
       this.startTimer();
-      
+
       // Update pause button icon
       if (this.pauseButton) {
         this.pauseButton.innerHTML = '⏸️';
@@ -326,7 +326,7 @@ export class RecordingIndicator {
     try {
       chrome.runtime.sendMessage({ type: 'STOP_RECORDING' }, (response) => {
         console.log('[RecordingIndicator] STOP_RECORDING response:', response);
-        
+
         // Trigger download if we got recording data
         if (response?.success && response.data) {
           const recording = response.data;
@@ -403,34 +403,34 @@ export class RecordingIndicator {
           this.stopPolling();
           return;
         }
-        
+
         const response = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
-        
+
         if (response?.success && response.data) {
           const { state, metadata } = response.data;
-          
+
           // Stop polling if recording is stopped
           if (state === 'idle') {
             this.stopPolling();
             return;
           }
-          
+
           // Update pause state based on recording state
           if (state === 'paused' && !this.isPaused) {
             this.setPaused(true);
           } else if (state === 'recording' && this.isPaused) {
             this.setPaused(false);
           }
-          
+
           if (metadata) {
             const { startTime, actionCount } = metadata;
-            
+
             // Update start time if we don't have it yet
             if (startTime && !this.startTime) {
               this.startTime = startTime;
               this.startTimer();
             }
-            
+
             // Update action count
             if (typeof actionCount === 'number' && this.actionCountText) {
               this.actionCountText.textContent = String(actionCount);
@@ -444,7 +444,7 @@ export class RecordingIndicator {
 
     // Initial poll
     poll();
-    
+
     // Poll every second
     this.pollingInterval = window.setInterval(poll, 1000);
   }

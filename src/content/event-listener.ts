@@ -118,12 +118,12 @@ export class EventListener {
     if (!this.isListening) return;
 
     const target = event.target as Element;
-    
+
     // Ignore clicks on recording indicator
     if (target.closest('#saveaction-recording-indicator')) {
       return;
     }
-    
+
     if (!this.isInteractiveElement(target)) return;
 
     // Check for double-click
@@ -138,15 +138,15 @@ export class EventListener {
 
     // Check if this click might cause navigation
     const willNavigate = this.isNavigationClick(target);
-    
+
     if (willNavigate) {
       // Prevent default temporarily to ensure action is captured
       event.preventDefault();
       event.stopPropagation();
-      
+
       const action = this.createClickAction(event, target, 1);
       this.emitAction(action);
-      
+
       // Wait a bit for sync to complete, then trigger navigation
       setTimeout(() => {
         if (target instanceof HTMLElement) {
@@ -166,12 +166,12 @@ export class EventListener {
     if (!this.isListening) return;
 
     const target = event.target as Element;
-    
+
     // Ignore clicks on recording indicator
     if (target.closest('#saveaction-recording-indicator')) {
       return;
     }
-    
+
     if (!this.isInteractiveElement(target)) return;
 
     const action = this.createClickAction(event, target, 2);
@@ -249,7 +249,7 @@ export class EventListener {
   private captureInputAction(target: HTMLInputElement | HTMLTextAreaElement): void {
     const selector = this.selectorGenerator.generateSelectors(target);
     const isSensitive = this.isSensitiveInput(target);
-    
+
     // Calculate average typing delay
     const typingDuration = Date.now() - this.typingStartTime;
     const typingDelay = this.keyCount > 1 ? Math.round(typingDuration / this.keyCount) : 50;
@@ -336,8 +336,16 @@ export class EventListener {
     if (!this.isListening) return;
 
     // Only capture special keys (Enter, Tab, Escape, etc.)
-    const specialKeys = ['Enter', 'Tab', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
-    
+    const specialKeys = [
+      'Enter',
+      'Tab',
+      'Escape',
+      'ArrowUp',
+      'ArrowDown',
+      'ArrowLeft',
+      'ArrowRight',
+    ];
+
     if (!specialKeys.includes(event.key)) return;
 
     const modifiers = this.getModifierKeys(event);
@@ -418,12 +426,12 @@ export class EventListener {
     if (element.closest('#saveaction-recording-indicator')) {
       return false;
     }
-    
+
     // Check if it's a link
     if (element.tagName === 'A' && (element as HTMLAnchorElement).href) {
       return true;
     }
-    
+
     // Check if it's a submit button
     if (element.tagName === 'BUTTON') {
       const button = element as HTMLButtonElement;
@@ -431,7 +439,7 @@ export class EventListener {
         return true;
       }
     }
-    
+
     // Check if it's a submit input
     if (element.tagName === 'INPUT') {
       const input = element as HTMLInputElement;
@@ -439,7 +447,7 @@ export class EventListener {
         return true;
       }
     }
-    
+
     return false;
   }
 
@@ -448,7 +456,7 @@ export class EventListener {
    */
   private isInteractiveElement(element: Element): boolean {
     const interactiveTags = ['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'LABEL'];
-    
+
     if (interactiveTags.includes(element.tagName)) {
       return true;
     }

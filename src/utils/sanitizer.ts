@@ -57,13 +57,7 @@ export function isSensitiveField(
   const combined = `${lowerName} ${lowerId}`;
 
   // Password patterns
-  const passwordPatterns = [
-    'password',
-    'passwd',
-    'pwd',
-    'pass',
-    'passphrase',
-  ];
+  const passwordPatterns = ['password', 'passwd', 'pwd', 'pass', 'passphrase'];
 
   // Credit card patterns
   const cardPatterns = [
@@ -76,14 +70,7 @@ export function isSensitiveField(
   ];
 
   // CVV patterns
-  const cvvPatterns = [
-    'cvv',
-    'cvc',
-    'csc',
-    'security-code',
-    'security_code',
-    'card-code',
-  ];
+  const cvvPatterns = ['cvv', 'cvc', 'csc', 'security-code', 'security_code', 'card-code'];
 
   // SSN patterns
   const ssnPatterns = ['ssn', 'social-security', 'social_security'];
@@ -159,12 +146,7 @@ export function sanitizeAction(action: Action): Action {
   const id = inputAction.selector.id || '';
 
   // Sanitize the value
-  const sanitizedValue = sanitizeValue(
-    inputAction.value,
-    inputAction.inputType,
-    name,
-    id
-  );
+  const sanitizedValue = sanitizeValue(inputAction.value, inputAction.inputType, name, id);
 
   return {
     ...inputAction,

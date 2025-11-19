@@ -4,12 +4,7 @@
  * Maintains global recording state across tabs
  */
 
-import type {
-  Message,
-  MessageResponse,
-  StatusResponse,
-  RecordingResponse,
-} from '@/types/messages';
+import type { Message, MessageResponse, StatusResponse, RecordingResponse } from '@/types/messages';
 import type { Recording, RecordingMetadata } from '@/types/recording';
 import { saveRecording } from '@/utils/storage';
 
@@ -55,7 +50,7 @@ function startActionPolling() {
   }
 
   console.log('[Background] Starting action polling every 2 seconds');
-  
+
   // Poll storage every 2 seconds to update cache
   state.pollingInterval = setInterval(async () => {
     if (!state.isRecording || !state.currentTabId) {
@@ -65,9 +60,16 @@ function startActionPolling() {
     try {
       // Read actions directly from chrome.storage.session
       const result = await chrome.storage.session.get('saveaction_current_actions');
-      if (result['saveaction_current_actions'] && Array.isArray(result['saveaction_current_actions'])) {
+      if (
+        result['saveaction_current_actions'] &&
+        Array.isArray(result['saveaction_current_actions'])
+      ) {
         state.actionCache = result['saveaction_current_actions'];
-        console.log('[Background] Action cache updated from storage:', state.actionCache.length, 'actions');
+        console.log(
+          '[Background] Action cache updated from storage:',
+          state.actionCache.length,
+          'actions'
+        );
       }
     } catch (error) {
       console.error('[Background] Failed to read actions from storage:', error);
@@ -265,7 +267,7 @@ async function handleStopRecording(
   _sender: chrome.runtime.MessageSender
 ): Promise<RecordingResponse> {
   console.log('[Background] handleStopRecording called, isRecording:', state.isRecording);
-  
+
   if (!state.isRecording) {
     return {
       success: false,
@@ -285,19 +287,22 @@ async function handleStopRecording(
   try {
     // Stop polling
     stopActionPolling();
-    
+
     // Get final actions from storage (has correct renumbered IDs)
     let currentPageActions: any[] = [];
     try {
       const result = await chrome.storage.session.get('saveaction_current_actions');
-      if (result['saveaction_current_actions'] && Array.isArray(result['saveaction_current_actions'])) {
+      if (
+        result['saveaction_current_actions'] &&
+        Array.isArray(result['saveaction_current_actions'])
+      ) {
         currentPageActions = result['saveaction_current_actions'];
         console.log('[Background] Got', currentPageActions.length, 'actions from storage');
       }
     } catch (error) {
       console.error('[Background] Failed to read final actions from storage:', error);
     }
-    
+
     // Try to get recording metadata from content script
     try {
       const response = await chrome.tabs.sendMessage(tabId, {
@@ -306,19 +311,23 @@ async function handleStopRecording(
 
       if (response?.success && response.data) {
         const recording = response.data as Recording;
-        
+
         // Use actions from storage (with correct IDs), not from content script
         recording.actions = currentPageActions;
-        
+
         // Use the recording if we got one with valid data
         if (recording.id && recording.testName && recording.startTime) {
           console.log('[Background] Got recording metadata from content script');
-          
+
           // Merge accumulated actions from previous pages
           if (state.accumulatedActions.length > 0) {
-            console.log('[Background] Merging', state.accumulatedActions.length, 'accumulated actions');
+            console.log(
+              '[Background] Merging',
+              state.accumulatedActions.length,
+              'accumulated actions'
+            );
             recording.actions = [...state.accumulatedActions, ...currentPageActions];
-            
+
             // Re-sort by timestamp
             recording.actions.sort((a, b) => a.timestamp - b.timestamp);
           }
@@ -349,7 +358,7 @@ async function handleStopRecording(
     // Content script couldn't provide recording (likely on a different page)
     // Build recording from background state
     console.log('[Background] Building recording from background state');
-    
+
     if (!state.testName || !state.startTime) {
       throw new Error('Missing recording metadata');
     }
@@ -510,23 +519,20 @@ async function handleResumeRecording(
  * Get current recording status
  */
 function handleGetStatus(): StatusResponse {
-  const recordingState = state.isRecording
-    ? state.isPaused
-      ? 'paused'
-      : 'recording'
-    : 'idle';
+  const recordingState = state.isRecording ? (state.isPaused ? 'paused' : 'recording') : 'idle';
 
   // Calculate total action count (accumulated + current page cache)
   const totalActions = state.accumulatedActions.length + state.actionCache.length;
 
   // Include basic metadata even without RecordingMetadata object
-  const metadata = state.isRecording && state.testName && state.startTime
-    ? {
-        testName: state.testName,
-        startTime: state.startTime,
-        actionCount: totalActions,
-      }
-    : undefined;
+  const metadata =
+    state.isRecording && state.testName && state.startTime
+      ? {
+          testName: state.testName,
+          startTime: state.startTime,
+          actionCount: totalActions,
+        }
+      : undefined;
 
   return {
     success: true,
@@ -576,9 +582,7 @@ async function handleGetRecording(
 /**
  * Sync action from content script to persistent storage
  */
-async function handleSyncAction(
-  payload: { action: any }
-): Promise<MessageResponse> {
+async function handleSyncAction(payload: { action: any }): Promise<MessageResponse> {
   if (!state.isRecording || !payload.action) {
     return { success: true };
   }
@@ -586,27 +590,27 @@ async function handleSyncAction(
   try {
     // Increment global counter
     state.actionCounter++;
-    
+
     // Renumber action with global counter
     const action = {
       ...payload.action,
       id: `act_${String(state.actionCounter).padStart(3, '0')}`,
     };
-    
+
     // Read current actions from storage
     const result = await chrome.storage.session.get('saveaction_current_actions');
-    let actions = result['saveaction_current_actions'] || [];
-    
+    const actions = result['saveaction_current_actions'] || [];
+
     // Add new action with corrected ID
     actions.push(action);
-    
+
     // Save back to storage
     await chrome.storage.session.set({
-      'saveaction_current_actions': actions,
+      saveaction_current_actions: actions,
     });
-    
+
     console.log('[Background] Synced action', action.id, 'to storage. Total:', actions.length);
-    
+
     return { success: true };
   } catch (error) {
     console.error('[Background] Failed to sync action:', error);
@@ -624,7 +628,7 @@ async function handleSaveCurrentState(
   _sender: chrome.runtime.MessageSender
 ): Promise<MessageResponse> {
   console.log('[Background] handleSaveCurrentState called, isRecording:', state.isRecording);
-  
+
   if (!state.isRecording) {
     console.log('[Background] No recording active, skipping save');
     return { success: true };
@@ -647,13 +651,10 @@ async function handleSaveCurrentState(
     if (response?.success && response.data && response.data.actions) {
       const newActions = response.data.actions;
       console.log('[Background] Received', newActions.length, 'actions from content script');
-      
+
       if (newActions.length > 0) {
         console.log('[Background] Saving', newActions.length, 'actions before navigation');
-        state.accumulatedActions = [
-          ...state.accumulatedActions,
-          ...newActions,
-        ];
+        state.accumulatedActions = [...state.accumulatedActions, ...newActions];
         console.log('[Background] Total accumulated actions:', state.accumulatedActions.length);
       }
     } else {
@@ -671,21 +672,19 @@ async function handleSaveCurrentState(
  * Broadcast status update to all connected popups
  */
 function broadcastStatusUpdate(): void {
-  const recordingState = state.isRecording
-    ? state.isPaused
-      ? 'paused'
-      : 'recording'
-    : 'idle';
+  const recordingState = state.isRecording ? (state.isPaused ? 'paused' : 'recording') : 'idle';
 
-  chrome.runtime.sendMessage({
-    type: 'STATUS_UPDATE',
-    payload: {
-      state: recordingState,
-      metadata: state.metadata || undefined,
-    },
-  }).catch(() => {
-    // Ignore errors if popup is not open
-  });
+  chrome.runtime
+    .sendMessage({
+      type: 'STATUS_UPDATE',
+      payload: {
+        state: recordingState,
+        metadata: state.metadata || undefined,
+      },
+    })
+    .catch(() => {
+      // Ignore errors if popup is not open
+    });
 }
 
 /**
@@ -696,7 +695,7 @@ function resetState(): void {
   if (state.pollingInterval) {
     clearInterval(state.pollingInterval);
   }
-  
+
   state = {
     isRecording: false,
     isPaused: false,
@@ -725,63 +724,74 @@ chrome.tabs.onRemoved.addListener((tabId: number) => {
 /**
  * Handle tab updates - detect navigation in recording tab
  */
-chrome.tabs.onUpdated.addListener(
-  async (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
-    if (
-      state.currentTabId === tabId &&
-      state.isRecording &&
-      changeInfo.status === 'loading' &&
-      changeInfo.url
-    ) {
-      console.log('[Background] Recording tab navigating to:', changeInfo.url);
-      console.log('[Background] Current accumulated actions:', state.accumulatedActions.length);
-      
-      // Read fresh actions directly from storage (not from cache which might be stale)
-      let currentPageActions: any[] = [];
-      try {
-        const result = await chrome.storage.session.get('saveaction_current_actions');
-        if (result['saveaction_current_actions'] && Array.isArray(result['saveaction_current_actions'])) {
-          currentPageActions = result['saveaction_current_actions'];
-          console.log('[Background] Read', currentPageActions.length, 'actions from storage before navigation');
-        }
-      } catch (error) {
-        console.error('[Background] Failed to read storage during navigation:', error);
+chrome.tabs.onUpdated.addListener(async (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
+  if (
+    state.currentTabId === tabId &&
+    state.isRecording &&
+    changeInfo.status === 'loading' &&
+    changeInfo.url
+  ) {
+    console.log('[Background] Recording tab navigating to:', changeInfo.url);
+    console.log('[Background] Current accumulated actions:', state.accumulatedActions.length);
+
+    // Read fresh actions directly from storage (not from cache which might be stale)
+    let currentPageActions: any[] = [];
+    try {
+      const result = await chrome.storage.session.get('saveaction_current_actions');
+      if (
+        result['saveaction_current_actions'] &&
+        Array.isArray(result['saveaction_current_actions'])
+      ) {
+        currentPageActions = result['saveaction_current_actions'];
+        console.log(
+          '[Background] Read',
+          currentPageActions.length,
+          'actions from storage before navigation'
+        );
       }
-      
-      // Merge current page actions into accumulated
-      if (currentPageActions.length > 0) {
-        console.log('[Background] Merging', currentPageActions.length, 'actions before navigation');
-        
-        // Only add actions we don't already have (deduplication by timestamp)
-        const existingTimestamps = new Set(state.accumulatedActions.map((a: any) => a.timestamp));
-        const newActions = currentPageActions.filter((a: any) => !existingTimestamps.has(a.timestamp));
-        
-        if (newActions.length > 0) {
-          state.accumulatedActions = [...state.accumulatedActions, ...newActions];
-          console.log('[Background] Added', newActions.length, 'new actions. Total:', state.accumulatedActions.length);
-        }
-      }
-      
-      // Clear cache and storage after merging
-      state.actionCache = [];
-      try {
-        await chrome.storage.session.remove('saveaction_current_actions');
-        console.log('[Background] Cleared storage for new page');
-      } catch (error) {
-        console.error('[Background] Failed to clear storage:', error);
+    } catch (error) {
+      console.error('[Background] Failed to read storage during navigation:', error);
+    }
+
+    // Merge current page actions into accumulated
+    if (currentPageActions.length > 0) {
+      console.log('[Background] Merging', currentPageActions.length, 'actions before navigation');
+
+      // Only add actions we don't already have (deduplication by timestamp)
+      const existingTimestamps = new Set(state.accumulatedActions.map((a: any) => a.timestamp));
+      const newActions = currentPageActions.filter(
+        (a: any) => !existingTimestamps.has(a.timestamp)
+      );
+
+      if (newActions.length > 0) {
+        state.accumulatedActions = [...state.accumulatedActions, ...newActions];
+        console.log(
+          '[Background] Added',
+          newActions.length,
+          'new actions. Total:',
+          state.accumulatedActions.length
+        );
       }
     }
-    
-    // When page finishes loading, the new content script will call GET_STATUS
-    // and restore the recording state
-    if (
-      state.currentTabId === tabId &&
-      state.isRecording &&
-      changeInfo.status === 'complete'
-    ) {
-      console.log('[Background] Page load complete - accumulated actions:', state.accumulatedActions.length);
+
+    // Clear cache and storage after merging
+    state.actionCache = [];
+    try {
+      await chrome.storage.session.remove('saveaction_current_actions');
+      console.log('[Background] Cleared storage for new page');
+    } catch (error) {
+      console.error('[Background] Failed to clear storage:', error);
     }
   }
-);
+
+  // When page finishes loading, the new content script will call GET_STATUS
+  // and restore the recording state
+  if (state.currentTabId === tabId && state.isRecording && changeInfo.status === 'complete') {
+    console.log(
+      '[Background] Page load complete - accumulated actions:',
+      state.accumulatedActions.length
+    );
+  }
+});
 
 console.log('[Background] SaveAction Recorder initialized');

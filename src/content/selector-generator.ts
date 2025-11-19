@@ -126,9 +126,7 @@ export class SelectorGenerator {
           selector = strategy.id ? `#${cssEscape(strategy.id)}` : undefined;
           break;
         case 'dataTestId':
-          selector = strategy.dataTestId
-            ? `[data-testid="${strategy.dataTestId}"]`
-            : undefined;
+          selector = strategy.dataTestId ? `[data-testid="${strategy.dataTestId}"]` : undefined;
           break;
         case 'ariaLabel':
           selector = strategy.ariaLabel ? `[aria-label="${strategy.ariaLabel}"]` : undefined;

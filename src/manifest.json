@@ -5,7 +5,7 @@
   "description": "Record user interactions on web pages and export them as JSON files for automated testing",
   "author": "SaveAction Team",
   "homepage_url": "https://github.com/rezwanahmedsami/SaveAction-recorder-browser-extenstion",
-  
+
   "icons": {
     "16": "icon-16.png",
     "48": "icon-48.png",
@@ -36,16 +36,9 @@
     }
   ],
 
-  "permissions": [
-    "storage",
-    "activeTab",
-    "tabs",
-    "downloads"
-  ],
+  "permissions": ["storage", "activeTab", "tabs", "downloads"],
 
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "host_permissions": ["<all_urls>"],
 
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
